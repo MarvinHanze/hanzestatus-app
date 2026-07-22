@@ -49,15 +49,15 @@ $validStatuses = ['investigating', 'identified', 'monitoring', 'resolved'];
 $page = max(1, (int) ($_GET['pagina'] ?? 1));
 $perPage = 15;
 
-$where = ['workspace_id = ?'];
+$where = ['i.workspace_id = ?'];
 $params = [$wsId];
 if (in_array($statusFilter, $validStatuses, true)) {
-    $where[] = 'status = ?';
+    $where[] = 'i.status = ?';
     $params[] = $statusFilter;
 }
 $whereSql = implode(' AND ', $where);
 
-$countStmt = db()->prepare("SELECT COUNT(*) FROM hst_incidents WHERE $whereSql");
+$countStmt = db()->prepare("SELECT COUNT(*) FROM hst_incidents i WHERE $whereSql");
 $countStmt->execute($params);
 $total = (int) $countStmt->fetchColumn();
 $totalPages = max(1, (int) ceil($total / $perPage));
