@@ -41,16 +41,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Verificatie — HanzeStatus</title>
     <base href="<?= e(BASE) ?>/">
     <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        .hs-noc-scene {
+            min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem;
+            background:
+                radial-gradient(ellipse 700px 500px at 50% 0%, rgba(16,185,129,.14), transparent 60%),
+                linear-gradient(180deg, #06110d 0%, #050a08 100%);
+            color: #e6faf2;
+        }
+        .hs-noc-card {
+            max-width: 400px; width: 100%; background: #0a1713; border: 1px solid #17342a;
+            border-radius: 10px; padding: 2rem 1.85rem;
+            box-shadow: 0 0 0 1px rgba(16,185,129,.06), 0 20px 60px -20px rgba(0,0,0,.7);
+        }
+        .hs-pulse-wrap { display: flex; align-items: center; justify-content: center; gap: .6rem; margin-bottom: 1rem; }
+        .hs-pulse-dot { position: relative; width: 14px; height: 14px; border-radius: 50%; background: #10b981; flex-shrink: 0; }
+        .hs-pulse-dot::before, .hs-pulse-dot::after {
+            content: ''; position: absolute; inset: 0; border-radius: 50%; background: #10b981;
+            animation: hs-pulse-ring 2.2s cubic-bezier(0,.4,.6,1) infinite;
+        }
+        .hs-pulse-dot::after { animation-delay: 1.1s; }
+        @keyframes hs-pulse-ring {
+            0% { transform: scale(1); opacity: .65; }
+            100% { transform: scale(3.4); opacity: 0; }
+        }
+        .hs-mono-label { font-family: 'JetBrains Mono', 'SFMono-Regular', monospace; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: #5eead4; }
+        .hs-noc-title { text-align: center; margin: 0 0 1.5rem; }
+        .hs-noc-title h2 { margin: .35rem 0 .3rem; font-size: 1.35rem; color: #ecfdf5; }
+        .hs-noc-title p { margin: 0; font-size: .85rem; color: #6b9284; }
+        .hs-noc-card label { color: #9fc7b8 !important; font-family: 'JetBrains Mono', monospace; font-size: .74rem !important; letter-spacing: .04em; text-transform: uppercase; }
+        .hs-noc-card input { background: #04100b !important; border: 1px solid #1c3a2f !important; color: #e6faf2 !important; font-family: 'JetBrains Mono', monospace; }
+        .hs-noc-card input:focus { border-color: #10b981 !important; box-shadow: 0 0 0 3px rgba(16,185,129,.15) !important; }
+        .hs-noc-card .hs-btn--primary { background: #10b981; color: #04100b; font-weight: 700; letter-spacing: .02em; }
+        .hs-noc-card .hs-btn--primary:hover { background: #34d399; }
+        .hs-noc-footer { text-align: center; font-family: 'JetBrains Mono', monospace; font-size: .74rem; color: #588071; margin-top: 1.15rem; line-height: 1.6; }
+        .hs-noc-links { text-align: center; margin-top: .8rem; font-size: .8rem; }
+        .hs-noc-links a { color: #34d399; text-decoration: none; }
+    </style>
 </head>
-<body style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1.5rem;">
-    <div class="hs-card" style="max-width:400px;width:100%;box-shadow:var(--hs-shadow-lg);">
-        <div style="text-align:center;margin-bottom:1.5rem;">
-            <div class="hs-brand-mark" style="width:44px;height:44px;margin:0 auto .75rem;font-size:1.2rem;"><?= hz_icon('shield') ?></div>
-            <h2 class="hs-display" style="margin:0;">Verificatie vereist</h2>
-            <p style="color:var(--hs-text-muted);font-size:.88rem;">Voer de 6-cijferige code uit je authenticator-app in</p>
+<body class="hs-noc-scene">
+    <div class="hs-noc-card">
+        <div class="hs-noc-title">
+            <div class="hs-pulse-wrap"><span class="hs-pulse-dot"></span><span class="hs-mono-label">verification required</span></div>
+            <h2>Verificatie vereist</h2>
+            <p>Voer de 6-cijferige code uit je authenticator-app in</p>
         </div>
         <?php if ($error): ?>
-            <div class="hs-alert hs-alert--error" role="alert"><?= hz_icon('alert-triangle') ?> <?= e($error) ?></div>
+            <div class="hs-alert hs-alert--error" role="alert" style="margin-bottom:1rem;"><?= hz_icon('alert-triangle') ?> <?= e($error) ?></div>
         <?php endif; ?>
         <form method="post" novalidate>
             <?= csrfField() ?>
@@ -60,11 +97,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <button type="submit" class="hs-btn hs-btn--primary" style="width:100%;">Verifiëren</button>
         </form>
-        <p style="text-align:center;margin-top:1rem;font-size:.78rem;color:var(--hs-text-muted);">
-            DEMO-modus: huidige geldige code is <strong style="font-family:'JetBrains Mono',monospace;"><?= e(totpCurrentCode($user['totp_secret'])) ?></strong> (ververst elke 30s)
+        <p class="hs-noc-footer">
+            DEMO-modus: huidige geldige code is <strong style="color:#5eead4;"><?= e(totpCurrentCode($user['totp_secret'])) ?></strong><br>(ververst elke 30s)
         </p>
-        <p style="text-align:center;margin-top:.75rem;">
-            <a href="login.php" style="font-size:.85rem;color:var(--hs-text-muted);">&larr; Terug naar inloggen</a>
+        <p class="hs-noc-links">
+            <a href="login.php">&larr; Terug naar inloggen</a>
         </p>
     </div>
 </body>
