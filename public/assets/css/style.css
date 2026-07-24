@@ -30,6 +30,12 @@
   --hs-text: #f1f5f4;
   --hs-text-muted: #90a19a;
   --hs-primary-light: #052e21;
+  --hs-up: #34d399;
+  --hs-up-bg: #0d2a20;
+  --hs-degraded: #fbbf24;
+  --hs-degraded-bg: #2c2308;
+  --hs-down: #fb7185;
+  --hs-down-bg: #2c1017;
 }
 /* "Middernacht" — donker bento-thema met indigo/violet gloed-accenten, bewust levendiger
    dan het neutrale --hs-theme="dark" hierboven (dat blijft de "kale mono-donker"-optie). */
