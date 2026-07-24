@@ -107,12 +107,14 @@
 
   document.addEventListener('click', function () {
     closeAllDropdowns();
-    var themePanel = qs('#hsThemePickerPanel');
-    var themeBtn = qs('#hsThemePickerBtn');
-    if (themePanel && themePanel.classList.contains('hs-is-open')) {
-      themePanel.classList.remove('hs-is-open');
-      if (themeBtn) themeBtn.setAttribute('aria-expanded', 'false');
-    }
+    [['#hsThemePickerPanel', '#hsThemePickerBtn'], ['#hsUptimeStylePickerPanel', '#hsUptimeStylePickerBtn']].forEach(function (pair) {
+      var panel = qs(pair[0]);
+      var btn = qs(pair[1]);
+      if (panel && panel.classList.contains('hs-is-open')) {
+        panel.classList.remove('hs-is-open');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+      }
+    });
   });
 
   /* --- Modals --- */
@@ -149,10 +151,23 @@
     });
   }
 
-  /* --- Thema-kiezer (publieke statuspagina) — keuze onthouden per browser via
-     localStorage, zodat een terugkerende bezoeker zijn/haar voorkeursthema behoudt. */
+  /* --- Thema-kiezer + uptime-weergave-kiezer (publieke statuspagina) — allebei onthouden
+     per browser via localStorage (aparte sleutels), zodat een terugkerende bezoeker zowel
+     zijn/haar voorkeursthema als voorkeurs-uptimestijl behoudt, onafhankelijk van elkaar. */
   var HS_THEME_KEY = 'hs-public-theme';
   var HS_THEME_LABELS = { '': 'Licht', 'dark': 'Donker', 'midnight': 'Middernacht', 'sunrise': 'Zonsopgang' };
+  var HS_UPTIME_STYLE_KEY = 'hs-uptime-style';
+  var HS_UPTIME_STYLE_LABELS = { '': 'Vloeiend', 'bars': 'Balkjes', 'dots': 'Stippen', 'blocks': 'Blokjes' };
+
+  function closeStylePickerPanels(exceptPanel) {
+    [qs('#hsThemePickerPanel'), qs('#hsUptimeStylePickerPanel')].forEach(function (panel) {
+      if (panel && panel !== exceptPanel && panel.classList.contains('hs-is-open')) {
+        panel.classList.remove('hs-is-open');
+        var btn = panel.previousElementSibling;
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
 
   function applyTheme(theme) {
     if (theme) {
@@ -162,7 +177,7 @@
     }
     var label = qs('#hsThemePickerLabel');
     if (label) label.textContent = HS_THEME_LABELS[theme] || 'Thema';
-    qsa('.hs-theme-option').forEach(function (opt) {
+    qsa('#hsThemePickerPanel .hs-theme-option').forEach(function (opt) {
       opt.classList.toggle('hs-is-active', (opt.getAttribute('data-hs-theme') || '') === theme);
     });
   }
@@ -180,15 +195,58 @@
       e.stopPropagation();
       var willOpen = !panel.classList.contains('hs-is-open');
       closeAllDropdowns();
+      closeStylePickerPanels(panel);
       panel.classList.toggle('hs-is-open', willOpen);
       btn.setAttribute('aria-expanded', String(willOpen));
     });
 
-    qsa('.hs-theme-option').forEach(function (opt) {
+    qsa('#hsThemePickerPanel .hs-theme-option').forEach(function (opt) {
       opt.addEventListener('click', function () {
         var theme = opt.getAttribute('data-hs-theme') || '';
         applyTheme(theme);
         try { localStorage.setItem(HS_THEME_KEY, theme); } catch (e) { /* privémodus: keuze geldt alleen voor deze paginaweergave */ }
+        panel.classList.remove('hs-is-open');
+        btn.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
+
+  function applyUptimeStyle(style) {
+    if (style) {
+      document.documentElement.setAttribute('data-uptime-style', style);
+    } else {
+      document.documentElement.removeAttribute('data-uptime-style');
+    }
+    var label = qs('#hsUptimeStylePickerLabel');
+    if (label) label.textContent = HS_UPTIME_STYLE_LABELS[style] || 'Uptime-weergave';
+    qsa('#hsUptimeStylePickerPanel .hs-theme-option').forEach(function (opt) {
+      opt.classList.toggle('hs-is-active', (opt.getAttribute('data-hs-uptime-style') || '') === style);
+    });
+  }
+
+  function initUptimeStylePicker() {
+    var btn = qs('#hsUptimeStylePickerBtn');
+    var panel = qs('#hsUptimeStylePickerPanel');
+    if (!btn || !panel) return;
+
+    var saved = '';
+    try { saved = localStorage.getItem(HS_UPTIME_STYLE_KEY) || ''; } catch (e) { /* privémodus: geen opslag, val terug op Vloeiend */ }
+    applyUptimeStyle(saved);
+
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var willOpen = !panel.classList.contains('hs-is-open');
+      closeAllDropdowns();
+      closeStylePickerPanels(panel);
+      panel.classList.toggle('hs-is-open', willOpen);
+      btn.setAttribute('aria-expanded', String(willOpen));
+    });
+
+    qsa('#hsUptimeStylePickerPanel .hs-theme-option').forEach(function (opt) {
+      opt.addEventListener('click', function () {
+        var style = opt.getAttribute('data-hs-uptime-style') || '';
+        applyUptimeStyle(style);
+        try { localStorage.setItem(HS_UPTIME_STYLE_KEY, style); } catch (e) { /* privémodus: keuze geldt alleen voor deze paginaweergave */ }
         panel.classList.remove('hs-is-open');
         btn.setAttribute('aria-expanded', 'false');
       });
@@ -201,5 +259,6 @@
     initModals();
     initDebouncedSearch();
     initThemePicker();
+    initUptimeStylePicker();
   });
 })();

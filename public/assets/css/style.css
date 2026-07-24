@@ -100,13 +100,28 @@ a { color: inherit; }
 .hs-monitor-row { background: var(--hs-surface); border: 1px solid var(--hs-border); border-radius: var(--hs-radius); padding: 1.1rem 1.25rem; margin-bottom: .75rem; }
 .hs-monitor-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: .6rem; }
 .hs-monitor-name { font-weight: 600; display: flex; align-items: center; gap: .5rem; }
-.hs-uptime-bar { display: flex; gap: 2px; height: 32px; overflow: hidden; }
-.hs-uptime-tick { flex: 1; border-radius: 2px; }
+/* UPTIME-WEERGAVE — vier stijlen, kiesbaar via de "Uptime-weergave"-knop naast de thema-kiezer
+   (zelfde localStorage-aanpak, eigen sleutel, onafhankelijk van het thema). Standaard ("Vloeiend",
+   geen data-uptime-style-attribuut) is een naadloze afgeronde balk zonder de "streepjescode"-look
+   van de oude vaste implementatie. flex:1 zonder min-width op de ticks is bewust: zo kan de balk
+   altijd naar de beschikbare kaartbreedte krimpen (zie ook de fix voor de eerdere overflow-bug),
+   ongeacht welke stijl actief is. */
+.hs-uptime-bar { display: flex; gap: 0; height: 26px; border-radius: 999px; overflow: hidden; background: var(--hs-border); }
+.hs-uptime-tick { flex: 1; }
 .hs-uptime-tick.hs-status-up { background: var(--hs-up); }
 .hs-uptime-tick.hs-status-degraded { background: var(--hs-degraded); }
 .hs-uptime-tick.hs-status-down { background: var(--hs-down); }
 .hs-uptime-tick.hs-status-nodata { background: var(--hs-border); }
 .hs-uptime-labels { display: flex; justify-content: space-between; font-size: .72rem; color: var(--hs-text-muted); margin-top: .3rem; }
+
+:root[data-uptime-style="bars"] .hs-uptime-bar { gap: 2px; height: 32px; border-radius: 0; background: none; }
+:root[data-uptime-style="bars"] .hs-uptime-tick { border-radius: 3px; }
+
+:root[data-uptime-style="dots"] .hs-uptime-bar { gap: 1px; height: 20px; border-radius: 0; background: none; align-items: center; }
+:root[data-uptime-style="dots"] .hs-uptime-tick { align-self: center; height: 8px; border-radius: 50%; }
+
+:root[data-uptime-style="blocks"] .hs-uptime-bar { flex-wrap: wrap; gap: 3px; height: auto; border-radius: 0; background: none; align-content: flex-start; }
+:root[data-uptime-style="blocks"] .hs-uptime-tick { flex: 0 0 8px; width: 8px; height: 8px; border-radius: 2px; }
 
 /* BENTO-GRID DIENSTENOVERZICHT — vervangt de eerdere altijd-even-brede verticale stapel
    .hs-monitor-row-kaarten met een responsive grid waarin een dienst met een actief probleem
@@ -156,6 +171,10 @@ a { color: inherit; }
 .hs-theme-option:hover { background: var(--hs-primary-light); }
 .hs-theme-option.hs-is-active { background: var(--hs-primary-light); color: var(--hs-primary); }
 .hs-theme-swatch { width: 18px; height: 18px; border-radius: 6px; flex-shrink: 0; border: 1px solid rgba(0,0,0,.08); }
+@media (max-width: 480px) {
+  .hs-theme-picker-btn span { display: none; }
+  .hs-theme-picker-btn { padding: .55rem; }
+}
 .hs-uptime-pct { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: .88rem; }
 
 .hs-status-pill { display: inline-flex; align-items: center; gap: .4rem; padding: .3rem .75rem; border-radius: 999px; font-size: .78rem; font-weight: 700; }

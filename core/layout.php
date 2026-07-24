@@ -137,23 +137,44 @@ function renderPublicStart(array $workspace, string $pageTitle): void
                 <span class="hs-brand-mark"><?= hz_icon('activity', 'hz-icon') ?></span>
                 <span><?= e($workspace['name']) ?></span>
             </a>
-            <div class="hs-theme-picker" id="hsThemePicker">
-                <button type="button" class="hs-theme-picker-btn" id="hsThemePickerBtn" aria-haspopup="true" aria-expanded="false">
-                    <?= hz_icon('palette') ?> <span id="hsThemePickerLabel">Thema</span>
-                </button>
-                <div class="hs-theme-picker-panel" id="hsThemePickerPanel" role="menu">
-                    <button type="button" class="hs-theme-option" data-hs-theme="" role="menuitem">
-                        <span class="hs-theme-swatch" style="background:#ecfdf5;"></span> Licht (standaard)
+            <div style="display:flex;align-items:center;gap:.6rem;">
+                <div class="hs-theme-picker" id="hsUptimeStylePicker">
+                    <button type="button" class="hs-theme-picker-btn" id="hsUptimeStylePickerBtn" aria-haspopup="true" aria-expanded="false" aria-label="Uptime-weergave wijzigen">
+                        <?= hz_icon('bar-chart') ?> <span id="hsUptimeStylePickerLabel">Uptime-weergave</span>
                     </button>
-                    <button type="button" class="hs-theme-option" data-hs-theme="dark" role="menuitem">
-                        <span class="hs-theme-swatch" style="background:#131b18;"></span> Donker
+                    <div class="hs-theme-picker-panel" id="hsUptimeStylePickerPanel" role="menu">
+                        <button type="button" class="hs-theme-option" data-hs-uptime-style="" role="menuitem">
+                            <?= hz_icon('pill') ?> Vloeiend (standaard)
+                        </button>
+                        <button type="button" class="hs-theme-option" data-hs-uptime-style="bars" role="menuitem">
+                            <?= hz_icon('bar-chart') ?> Balkjes
+                        </button>
+                        <button type="button" class="hs-theme-option" data-hs-uptime-style="dots" role="menuitem">
+                            <?= hz_icon('dots-horizontal') ?> Stippen
+                        </button>
+                        <button type="button" class="hs-theme-option" data-hs-uptime-style="blocks" role="menuitem">
+                            <?= hz_icon('grid-2x2') ?> Blokjes
+                        </button>
+                    </div>
+                </div>
+                <div class="hs-theme-picker" id="hsThemePicker">
+                    <button type="button" class="hs-theme-picker-btn" id="hsThemePickerBtn" aria-haspopup="true" aria-expanded="false" aria-label="Thema wijzigen">
+                        <?= hz_icon('palette') ?> <span id="hsThemePickerLabel">Thema</span>
                     </button>
-                    <button type="button" class="hs-theme-option" data-hs-theme="midnight" role="menuitem">
-                        <span class="hs-theme-swatch" style="background:#12162a;"></span> Middernacht (bento)
-                    </button>
-                    <button type="button" class="hs-theme-option" data-hs-theme="sunrise" role="menuitem">
-                        <span class="hs-theme-swatch" style="background:#fff7ed;border-color:#fde4cd;"></span> Zonsopgang (bento)
-                    </button>
+                    <div class="hs-theme-picker-panel" id="hsThemePickerPanel" role="menu">
+                        <button type="button" class="hs-theme-option" data-hs-theme="" role="menuitem">
+                            <span class="hs-theme-swatch" style="background:#ecfdf5;"></span> Licht (standaard)
+                        </button>
+                        <button type="button" class="hs-theme-option" data-hs-theme="dark" role="menuitem">
+                            <span class="hs-theme-swatch" style="background:#131b18;"></span> Donker
+                        </button>
+                        <button type="button" class="hs-theme-option" data-hs-theme="midnight" role="menuitem">
+                            <span class="hs-theme-swatch" style="background:#12162a;"></span> Middernacht (bento)
+                        </button>
+                        <button type="button" class="hs-theme-option" data-hs-theme="sunrise" role="menuitem">
+                            <span class="hs-theme-swatch" style="background:#fff7ed;border-color:#fde4cd;"></span> Zonsopgang (bento)
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
