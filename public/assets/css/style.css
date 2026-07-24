@@ -100,8 +100,8 @@ a { color: inherit; }
 .hs-monitor-row { background: var(--hs-surface); border: 1px solid var(--hs-border); border-radius: var(--hs-radius); padding: 1.1rem 1.25rem; margin-bottom: .75rem; }
 .hs-monitor-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: .6rem; }
 .hs-monitor-name { font-weight: 600; display: flex; align-items: center; gap: .5rem; }
-.hs-uptime-bar { display: flex; gap: 2px; height: 32px; }
-.hs-uptime-tick { flex: 1; border-radius: 2px; min-width: 2px; }
+.hs-uptime-bar { display: flex; gap: 2px; height: 32px; overflow: hidden; }
+.hs-uptime-tick { flex: 1; border-radius: 2px; }
 .hs-uptime-tick.hs-status-up { background: var(--hs-up); }
 .hs-uptime-tick.hs-status-degraded { background: var(--hs-degraded); }
 .hs-uptime-tick.hs-status-down { background: var(--hs-down); }
@@ -126,6 +126,7 @@ a { color: inherit; }
   display: flex;
   flex-direction: column;
   gap: .7rem;
+  min-width: 0;
   transition: transform .2s ease, box-shadow .2s ease;
 }
 .hs-service-tile:hover { transform: translateY(-2px); box-shadow: var(--hs-shadow-lg); }
