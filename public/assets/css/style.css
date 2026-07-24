@@ -114,14 +114,41 @@ a { color: inherit; }
 .hs-uptime-tick.hs-status-nodata { background: var(--hs-border); }
 .hs-uptime-labels { display: flex; justify-content: space-between; font-size: .72rem; color: var(--hs-text-muted); margin-top: .3rem; }
 
-:root[data-uptime-style="bars"] .hs-uptime-bar { gap: 2px; height: 32px; border-radius: 0; background: none; }
+:root[data-uptime-style="bars"] .hs-uptime-bar { gap: 2px; height: 36px; border-radius: 0; background: none; }
 :root[data-uptime-style="bars"] .hs-uptime-tick { border-radius: 3px; }
 
-:root[data-uptime-style="dots"] .hs-uptime-bar { gap: 1px; height: 20px; border-radius: 0; background: none; align-items: center; }
-:root[data-uptime-style="dots"] .hs-uptime-tick { align-self: center; height: 8px; border-radius: 50%; }
+:root[data-uptime-style="dots"] .hs-uptime-bar { gap: 2px; height: 22px; border-radius: 0; background: none; align-items: center; }
+:root[data-uptime-style="dots"] .hs-uptime-tick { align-self: center; height: 10px; border-radius: 50%; }
 
 :root[data-uptime-style="blocks"] .hs-uptime-bar { flex-wrap: wrap; gap: 3px; height: auto; border-radius: 0; background: none; align-content: flex-start; }
 :root[data-uptime-style="blocks"] .hs-uptime-tick { flex: 0 0 8px; width: 8px; height: 8px; border-radius: 2px; }
+
+/* "Balkjes" en "Stippen" hebben, in tegenstelling tot "Vloeiend"/"Blokjes", elke dag als eigen
+   zichtbaar element nodig om iets te betekenen — bij 90 dagen in een ~230px bento-tegel wordt
+   elke tick <2px breed en dus onleesbaar, ongeacht kleur/vorm. Statuspagina's die dagelijkse
+   resolutie tonen (Atlassian Statuspage, Better Stack, Instatus) lossen dit op door elke dienst
+   een volle-breedte rij te geven i.p.v. een kleine tegel in een multi-kolom grid — dezelfde
+   aanpak hier: bij deze twee stijlen stapelt de grid om naar volle-breedte rijen (op desktop
+   ruwweg 3-4x meer breedte per tick dan in de bento-tegel), i.p.v. de bento-indeling te behouden
+   en de leesbaarheid te blijven opofferen. */
+:root[data-uptime-style="bars"] .hs-services-grid,
+:root[data-uptime-style="dots"] .hs-services-grid {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Zelfs volle breedte is op een telefoon niet genoeg voor 90 individuele ticks (~1-1.5px elk —
+   met name "Stippen" wordt dan optisch niet meer van "Balkjes" te onderscheiden, een stip heeft
+   nou eenmaal wat breedte nodig om als rond te lezen). Downsampling naar 1 op de 3 dagen i.p.v.
+   verder te blijven verdunnen: de overgebleven ticks krijgen dankzij flex:1 automatisch 3x de
+   breedte. Zelfde afweging die responsive uptime-widgets in het echt maken (minder resolutie op
+   klein scherm i.p.v. onleesbare haarlijntjes). */
+@media (max-width: 480px) {
+  :root[data-uptime-style="bars"] .hs-uptime-tick:not(:nth-child(3n+1)),
+  :root[data-uptime-style="dots"] .hs-uptime-tick:not(:nth-child(3n+1)) {
+    display: none;
+  }
+}
 
 /* BENTO-GRID DIENSTENOVERZICHT — vervangt de eerdere altijd-even-brede verticale stapel
    .hs-monitor-row-kaarten met een responsive grid waarin een dienst met een actief probleem
