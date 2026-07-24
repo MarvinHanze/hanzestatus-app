@@ -113,11 +113,30 @@ function renderPublicStart(array $workspace, string $pageTitle): void
     <body>
     <a href="#hs-main-content" class="hs-skip-link">Naar inhoud springen</a>
     <header class="hs-public-header">
-        <div class="hs-container">
+        <div class="hs-container" style="display:flex;align-items:center;justify-content:space-between;">
             <a href="status.php?w=<?= e($workspace['slug']) ?>" class="hs-brand">
                 <span class="hs-brand-mark"><?= hz_icon('activity', 'hz-icon') ?></span>
                 <span><?= e($workspace['name']) ?></span>
             </a>
+            <div class="hs-theme-picker" id="hsThemePicker">
+                <button type="button" class="hs-theme-picker-btn" id="hsThemePickerBtn" aria-haspopup="true" aria-expanded="false">
+                    <?= hz_icon('palette') ?> <span id="hsThemePickerLabel">Thema</span>
+                </button>
+                <div class="hs-theme-picker-panel" id="hsThemePickerPanel" role="menu">
+                    <button type="button" class="hs-theme-option" data-hs-theme="" role="menuitem">
+                        <span class="hs-theme-swatch" style="background:#ecfdf5;"></span> Licht (standaard)
+                    </button>
+                    <button type="button" class="hs-theme-option" data-hs-theme="dark" role="menuitem">
+                        <span class="hs-theme-swatch" style="background:#131b18;"></span> Donker
+                    </button>
+                    <button type="button" class="hs-theme-option" data-hs-theme="midnight" role="menuitem">
+                        <span class="hs-theme-swatch" style="background:#12162a;"></span> Middernacht (bento)
+                    </button>
+                    <button type="button" class="hs-theme-option" data-hs-theme="sunrise" role="menuitem">
+                        <span class="hs-theme-swatch" style="background:#fff7ed;border-color:#fde4cd;"></span> Zonsopgang (bento)
+                    </button>
+                </div>
+            </div>
         </div>
     </header>
     <main id="hs-main-content">

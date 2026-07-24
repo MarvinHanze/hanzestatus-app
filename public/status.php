@@ -146,15 +146,28 @@ renderPublicStart($workspace, 'Status');
     <?php endif; ?>
 
     <h2 class="hs-display" style="font-size:1.1rem;margin:2rem 0 1rem;"><?= hz_icon('activity') ?> Diensten</h2>
-    <?php foreach ($monitors as $m): $uptime = monitorUptimePercent((int) $m['id'], 90); $ticks = getUptimeTicks((int) $m['id'], 90); ?>
-        <div class="hs-monitor-row">
-            <div class="hs-monitor-head">
-                <span class="hs-monitor-name"><?= e($m['name']) ?></span>
-                <div style="display:flex;align-items:center;gap:.75rem;">
-                    <span class="hs-uptime-pct"><?= e(number_format($uptime, 2)) ?>% uptime</span>
-                    <?= monitorStatusPill($m['current_status']) ?>
+    <div class="hs-services-grid">
+    <?php foreach ($monitors as $m):
+        $uptime = monitorUptimePercent((int) $m['id'], 90);
+        $ticks = getUptimeTicks((int) $m['id'], 90);
+        // Bento-indeling: een dienst met een actief probleem krijgt visueel meer gewicht
+        // (breder + geaccentueerde kleur) i.p.v. dezelfde grootte als een gezonde dienst.
+        $tileClass = 'hs-service-tile';
+        if ($m['current_status'] === 'down') {
+            $tileClass .= ' hs-service-tile--down hs-service-tile--hero';
+        } elseif ($m['current_status'] === 'degraded') {
+            $tileClass .= ' hs-service-tile--alert hs-service-tile--wide';
+        }
+    ?>
+        <div class="<?= e($tileClass) ?>">
+            <div class="hs-service-tile-top">
+                <div style="display:flex;align-items:center;gap:.65rem;min-width:0;">
+                    <span class="hs-service-tile-icon"><?= hz_icon('activity') ?></span>
+                    <span class="hs-service-tile-name"><?= e($m['name']) ?></span>
                 </div>
+                <?= monitorStatusPill($m['current_status']) ?>
             </div>
+            <div class="hs-service-tile-uptime hs-mono"><?= e(number_format($uptime, 2)) ?>%</div>
             <div class="hs-uptime-bar">
                 <?php foreach ($ticks as $t): ?>
                     <div class="hs-uptime-tick hs-status-<?= e($t['status']) ?>" title="<?= e($t['date']) ?>: <?= e(monitorStatusLabel($t['status'] === 'nodata' ? 'paused' : $t['status'])) ?>"></div>
@@ -163,6 +176,7 @@ renderPublicStart($workspace, 'Status');
             <div class="hs-uptime-labels"><span>90 dagen geleden</span><span>Vandaag</span></div>
         </div>
     <?php endforeach; ?>
+    </div>
 
     <?php if ($pastIncidents): ?>
         <h2 class="hs-display" style="font-size:1.1rem;margin:2rem 0 1rem;"><?= hz_icon('clock') ?> Eerdere incidenten</h2>

@@ -105,7 +105,15 @@
     });
   }
 
-  document.addEventListener('click', function () { closeAllDropdowns(); });
+  document.addEventListener('click', function () {
+    closeAllDropdowns();
+    var themePanel = qs('#hsThemePickerPanel');
+    var themeBtn = qs('#hsThemePickerBtn');
+    if (themePanel && themePanel.classList.contains('hs-is-open')) {
+      themePanel.classList.remove('hs-is-open');
+      if (themeBtn) themeBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
 
   /* --- Modals --- */
   function initModals() {
@@ -141,10 +149,57 @@
     });
   }
 
+  /* --- Thema-kiezer (publieke statuspagina) — keuze onthouden per browser via
+     localStorage, zodat een terugkerende bezoeker zijn/haar voorkeursthema behoudt. */
+  var HS_THEME_KEY = 'hs-public-theme';
+  var HS_THEME_LABELS = { '': 'Licht', 'dark': 'Donker', 'midnight': 'Middernacht', 'sunrise': 'Zonsopgang' };
+
+  function applyTheme(theme) {
+    if (theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    var label = qs('#hsThemePickerLabel');
+    if (label) label.textContent = HS_THEME_LABELS[theme] || 'Thema';
+    qsa('.hs-theme-option').forEach(function (opt) {
+      opt.classList.toggle('hs-is-active', (opt.getAttribute('data-hs-theme') || '') === theme);
+    });
+  }
+
+  function initThemePicker() {
+    var btn = qs('#hsThemePickerBtn');
+    var panel = qs('#hsThemePickerPanel');
+    if (!btn || !panel) return;
+
+    var saved = '';
+    try { saved = localStorage.getItem(HS_THEME_KEY) || ''; } catch (e) { /* privémodus: geen opslag, val terug op Licht */ }
+    applyTheme(saved);
+
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var willOpen = !panel.classList.contains('hs-is-open');
+      closeAllDropdowns();
+      panel.classList.toggle('hs-is-open', willOpen);
+      btn.setAttribute('aria-expanded', String(willOpen));
+    });
+
+    qsa('.hs-theme-option').forEach(function (opt) {
+      opt.addEventListener('click', function () {
+        var theme = opt.getAttribute('data-hs-theme') || '';
+        applyTheme(theme);
+        try { localStorage.setItem(HS_THEME_KEY, theme); } catch (e) { /* privémodus: keuze geldt alleen voor deze paginaweergave */ }
+        panel.classList.remove('hs-is-open');
+        btn.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     initUserDropdown();
     initNotifDropdown();
     initModals();
     initDebouncedSearch();
+    initThemePicker();
   });
 })();
