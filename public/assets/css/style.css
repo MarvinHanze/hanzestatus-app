@@ -166,6 +166,14 @@ a { color: inherit; }
 .hs-status-dot.hs-status-degraded { background: var(--hs-degraded); box-shadow: 0 0 0 3px var(--hs-degraded-bg); }
 .hs-status-dot.hs-status-down { background: var(--hs-down); box-shadow: 0 0 0 3px var(--hs-down-bg); }
 
+/* "Live"-badge: markeert monitors die een echte HTTP-check uitvoeren (check_mode = 'live')
+   i.p.v. de gesimuleerde curatie-demomonitors — pulserende stip om het "semi-live"-karakter
+   te onderstrepen (net als de statusindicator op het Middernacht-thema van de publieke pagina). */
+.hs-live-badge { display: inline-flex; align-items: center; gap: .4rem; padding: .25rem .65rem; border-radius: 999px; font-size: .72rem; font-weight: 700; background: var(--hs-primary-light); color: var(--hs-primary); vertical-align: middle; }
+.hs-live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--hs-primary); animation: hs-live-pulse 2s ease-in-out infinite; }
+@keyframes hs-live-pulse { 0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(5,150,105,.35); } 50% { opacity: .7; box-shadow: 0 0 0 4px rgba(5,150,105,0); } }
+@media (prefers-reduced-motion: reduce) { .hs-live-dot { animation: none; } }
+
 .hs-incident-card { background: var(--hs-surface); border: 1px solid var(--hs-border); border-radius: var(--hs-radius); padding: 1.25rem; margin-bottom: 1rem; }
 .hs-incident-update { display: flex; gap: .75rem; padding: .75rem 0; border-top: 1px dashed var(--hs-border); }
 .hs-incident-update:first-child { border-top: none; }

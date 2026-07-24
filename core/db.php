@@ -254,4 +254,13 @@ function initSchema(): void
         id INT PRIMARY KEY DEFAULT 1,
         last_reset DATETIME
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    // Semi-live monitoring (24 juli 2026): monitors die een gebruiker zelf aanmaakt kunnen
+    // een ECHTE HTTP-check tegen hun eigen URL krijgen i.p.v. altijd gesimuleerde data — zie
+    // core/livecheck.php. Bestaande curatie-demo-monitors blijven 'simulated' (default),
+    // zodat hun geregisseerde 90-dagen-geschiedenis niet verandert.
+    ensureColumn('hst_monitors', 'check_mode', "ENUM('simulated','live') NOT NULL DEFAULT 'simulated'");
+    ensureColumn('hst_monitors', 'keyword_text', 'VARCHAR(150) NULL');
+    ensureColumn('hst_monitors', 'last_checked_at', 'DATETIME NULL');
+    ensureColumn('hst_monitors', 'last_check_detail', 'VARCHAR(255) NULL');
 }

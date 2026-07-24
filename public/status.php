@@ -164,6 +164,9 @@ renderPublicStart($workspace, 'Status');
                 <div style="display:flex;align-items:center;gap:.65rem;min-width:0;">
                     <span class="hs-service-tile-icon"><?= hz_icon('activity') ?></span>
                     <span class="hs-service-tile-name"><?= e($m['name']) ?></span>
+                    <?php if ($m['check_mode'] === 'live'): ?>
+                        <span class="hs-live-badge" title="Deze dienst wordt echt gecontroleerd (semi-live), niet gesimuleerd"><span class="hs-live-dot"></span> Live</span>
+                    <?php endif; ?>
                 </div>
                 <?= monitorStatusPill($m['current_status']) ?>
             </div>

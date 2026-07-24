@@ -80,7 +80,7 @@ function refreshMonitorSimulation(int $workspaceId): void
     $today = simDayIndex(time());
     $todayDate = date('Y-m-d', time());
 
-    $stmt = $pdo->prepare('SELECT id, current_status FROM hst_monitors WHERE workspace_id = ?');
+    $stmt = $pdo->prepare('SELECT id, current_status, check_mode, url, type, keyword_text FROM hst_monitors WHERE workspace_id = ?');
     $stmt->execute([$workspaceId]);
     $monitors = $stmt->fetchAll();
 
@@ -96,6 +96,12 @@ function refreshMonitorSimulation(int $workspaceId): void
 
         if ($row) {
             $status = $row['status'];
+        } elseif ($m['check_mode'] === 'live') {
+            // Semi-live: minstens 1 echte HTTP-check per dag per monitor (bij het eerste
+            // bezoek van de dag). Geen achtergrond-cron nodig, maar wel een daadwerkelijk
+            // uitgevoerde request i.p.v. altijd gesimuleerde data — zie ook de
+            // "Nu controleren"-knop op monitors.php voor een handmatige tussentijdse check.
+            $status = runLiveMonitorCheck($monitorId, $m['url'], $m['type'], $m['keyword_text'], $todayDate);
         } else {
             $sim = simulatedDailyStatus($monitorId, $today);
             $pdo->prepare('INSERT IGNORE INTO hst_monitor_checks (monitor_id, status, checked_at, response_time_ms) VALUES (?, ?, ?, ?)')
@@ -107,6 +113,24 @@ function refreshMonitorSimulation(int $workspaceId): void
             $pdo->prepare('UPDATE hst_monitors SET current_status = ? WHERE id = ?')->execute([$status, $monitorId]);
         }
     }
+}
+
+/**
+ * Voert een echte live-check uit voor één monitor, schrijft het check-record voor
+ * $todayDate (INSERT IGNORE — als er door een race al net een record is bijgeschreven
+ * winnen we niet opnieuw, geen probleem) en de last_checked_at/last_check_detail-kolommen
+ * bij (altijd bijgewerkt, ook als er vandaag al een record bestond — zodat "Nu controleren"
+ * altijd een verse detail-melding toont ook al verandert de dag-status niet).
+ */
+function runLiveMonitorCheck(int $monitorId, string $url, string $type, ?string $keyword, string $todayDate): string
+{
+    $result = performLiveCheck($url, $type, $keyword);
+    $pdo = db();
+    $pdo->prepare('INSERT IGNORE INTO hst_monitor_checks (monitor_id, status, checked_at, response_time_ms) VALUES (?, ?, ?, ?)')
+        ->execute([$monitorId, $result['status'], $todayDate, $result['response_time_ms']]);
+    $pdo->prepare('UPDATE hst_monitors SET last_checked_at = NOW(), last_check_detail = ? WHERE id = ?')
+        ->execute([$result['detail'], $monitorId]);
+    return $result['status'];
 }
 
 /**

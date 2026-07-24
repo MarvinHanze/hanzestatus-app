@@ -35,22 +35,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $url = trim((string) ($_POST['url'] ?? ''));
         $type = (string) ($_POST['type'] ?? 'http');
         $interval = (int) ($_POST['check_interval_seconds'] ?? 60);
+        $checkMode = (($_POST['check_mode'] ?? '') === 'live') ? 'live' : 'simulated';
+        $keyword = trim((string) ($_POST['keyword_text'] ?? ''));
         if (mb_strlen($name) < 2) {
             $errors[] = 'Vul een naam in.';
         } elseif (!validateUrl($url)) {
             $errors[] = 'Vul een geldige URL in.';
         } elseif (!in_array($type, ['http', 'ping', 'keyword'], true)) {
             $errors[] = 'Ongeldig monitortype.';
+        } elseif ($type === 'keyword' && mb_strlen($keyword) < 1) {
+            $errors[] = 'Vul een trefwoord in om op te controleren.';
         } else {
             $interval = max(15, min(3600, $interval));
-            db()->prepare('UPDATE hst_monitors SET name = ?, url = ?, type = ?, check_interval_seconds = ? WHERE id = ?')
-                ->execute([$name, $url, $type, $interval, $monitorId]);
+            db()->prepare('UPDATE hst_monitors SET name = ?, url = ?, type = ?, check_interval_seconds = ?, check_mode = ?, keyword_text = ? WHERE id = ?')
+                ->execute([$name, $url, $type, $interval, $checkMode, $type === 'keyword' ? $keyword : null, $monitorId]);
             auditLog($wsId, (int) $user['id'], 'monitor.update', 'monitor', $monitorId, "Monitor bijgewerkt: $name");
             $monitor['name'] = $name;
             $monitor['url'] = $url;
             $monitor['type'] = $type;
             $monitor['check_interval_seconds'] = $interval;
+            $monitor['check_mode'] = $checkMode;
+            $monitor['keyword_text'] = $type === 'keyword' ? $keyword : null;
             $success = 'Monitor bijgewerkt.';
+        }
+    } elseif ($act === 'check_now') {
+        if ($monitor['check_mode'] === 'live') {
+            $status = runLiveMonitorCheck($monitorId, $monitor['url'], $monitor['type'], $monitor['keyword_text'], date('Y-m-d'));
+            if ($status !== $monitor['current_status']) {
+                db()->prepare('UPDATE hst_monitors SET current_status = ? WHERE id = ?')->execute([$status, $monitorId]);
+            }
+            $monitor['current_status'] = $status;
+            $monitor['last_checked_at'] = date('Y-m-d H:i:s');
+            auditLog($wsId, (int) $user['id'], 'monitor.check_now', 'monitor', $monitorId, "Handmatige live-check uitgevoerd voor: {$monitor['name']} (resultaat: $status)");
+            $success = 'Live-check uitgevoerd: status is nu "' . monitorStatusLabel($status) . '".';
         }
     } elseif ($act === 'toggle_pause') {
         if ($monitor['current_status'] === 'paused') {
@@ -91,10 +108,29 @@ renderAdminStart('monitors', $monitor['name']);
         <div class="hs-card" style="margin-bottom:1.25rem;">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;">
                 <div>
-                    <h2 class="hs-display" style="margin:0 0 .3rem;"><?= hz_icon('globe') ?> <?= e($monitor['name']) ?></h2>
+                    <h2 class="hs-display" style="margin:0 0 .3rem;"><?= hz_icon('globe') ?> <?= e($monitor['name']) ?>
+                        <?php if ($monitor['check_mode'] === 'live'): ?>
+                            <span class="hs-live-badge"><span class="hs-live-dot"></span> Live</span>
+                        <?php endif; ?>
+                    </h2>
                     <p style="color:var(--hs-text-muted);font-size:.85rem;margin:0;"><?= e($monitor['url']) ?></p>
+                    <?php if ($monitor['check_mode'] === 'live' && $monitor['last_checked_at']): ?>
+                        <p style="color:var(--hs-text-muted);font-size:.76rem;margin:.3rem 0 0;">
+                            Laatst live gecontroleerd: <?= nlDateTime($monitor['last_checked_at']) ?>
+                            <?php if (!empty($monitor['last_check_detail'])): ?> · <?= e($monitor['last_check_detail']) ?><?php endif; ?>
+                        </p>
+                    <?php endif; ?>
                 </div>
-                <?= monitorStatusPill($monitor['current_status']) ?>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;">
+                    <?= monitorStatusPill($monitor['current_status']) ?>
+                    <?php if ($canManage && $monitor['check_mode'] === 'live'): ?>
+                        <form method="post">
+                            <?= csrfField() ?>
+                            <input type="hidden" name="action" value="check_now">
+                            <button type="submit" class="hs-btn hs-btn--ghost hs-btn--sm"><?= hz_icon('refresh-cw') ?> Nu controleren</button>
+                        </form>
+                    <?php endif; ?>
+                </div>
             </div>
             <div class="hs-uptime-bar">
                 <?php foreach ($ticks as $t): ?>
@@ -151,13 +187,23 @@ renderAdminStart('monitors', $monitor['name']);
                 <div class="hs-field"><label for="url">URL</label><input type="url" id="url" name="url" required value="<?= e($monitor['url']) ?>"></div>
                 <div class="hs-field">
                     <label for="type">Type</label>
-                    <select id="type" name="type">
+                    <select id="type" name="type" onchange="document.getElementById('hsKeywordFieldEdit').style.display = this.value === 'keyword' ? 'block' : 'none';">
                         <option value="http" <?= $monitor['type'] === 'http' ? 'selected' : '' ?>>HTTP(S)</option>
                         <option value="keyword" <?= $monitor['type'] === 'keyword' ? 'selected' : '' ?>>Keyword</option>
                         <option value="ping" <?= $monitor['type'] === 'ping' ? 'selected' : '' ?>>Ping</option>
                     </select>
                 </div>
+                <div class="hs-field" id="hsKeywordFieldEdit" style="<?= $monitor['type'] === 'keyword' ? '' : 'display:none;' ?>">
+                    <label for="keyword_text">Trefwoord</label>
+                    <input type="text" id="keyword_text" name="keyword_text" maxlength="150" value="<?= e($monitor['keyword_text'] ?? '') ?>">
+                </div>
                 <div class="hs-field"><label for="check_interval_seconds">Interval (sec.)</label><input type="number" id="check_interval_seconds" name="check_interval_seconds" value="<?= (int) $monitor['check_interval_seconds'] ?>" min="15" max="3600" step="15"></div>
+                <div class="hs-field">
+                    <label style="display:flex;align-items:center;gap:.5rem;font-weight:600;">
+                        <input type="checkbox" name="check_mode" value="live" <?= $monitor['check_mode'] === 'live' ? 'checked' : '' ?> style="width:auto;">
+                        Echte controle uitvoeren op deze URL (semi-live)
+                    </label>
+                </div>
                 <button type="submit" class="hs-btn hs-btn--primary" style="width:100%;">Opslaan</button>
             </form>
         </div>

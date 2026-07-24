@@ -20,6 +20,7 @@ require_once __DIR__ . '/../core/audit.php';
 require_once __DIR__ . '/../core/notify.php';
 require_once __DIR__ . '/../core/totp.php';
 require_once __DIR__ . '/../core/simulate.php';
+require_once __DIR__ . '/../core/livecheck.php';
 require_once __DIR__ . '/../core/layout.php';
 
 initSchema();

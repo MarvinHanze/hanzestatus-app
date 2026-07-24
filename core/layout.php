@@ -54,6 +54,25 @@ function renderAdminStart(string $active, string $pageTitle): void
             <header class="hs-topbar">
                 <h1><?= e($pageTitle) ?></h1>
                 <div style="display:flex;align-items:center;gap:.75rem;">
+                    <div class="hs-theme-picker" id="hsThemePicker">
+                        <button type="button" class="hs-theme-picker-btn" id="hsThemePickerBtn" aria-haspopup="true" aria-expanded="false">
+                            <?= hz_icon('palette') ?> <span id="hsThemePickerLabel">Thema</span>
+                        </button>
+                        <div class="hs-theme-picker-panel" id="hsThemePickerPanel" role="menu">
+                            <button type="button" class="hs-theme-option" data-hs-theme="" role="menuitem">
+                                <span class="hs-theme-swatch" style="background:#ecfdf5;"></span> Licht (standaard)
+                            </button>
+                            <button type="button" class="hs-theme-option" data-hs-theme="dark" role="menuitem">
+                                <span class="hs-theme-swatch" style="background:#131b18;"></span> Donker
+                            </button>
+                            <button type="button" class="hs-theme-option" data-hs-theme="midnight" role="menuitem">
+                                <span class="hs-theme-swatch" style="background:#12162a;"></span> Middernacht (bento)
+                            </button>
+                            <button type="button" class="hs-theme-option" data-hs-theme="sunrise" role="menuitem">
+                                <span class="hs-theme-swatch" style="background:#fff7ed;border-color:#fde4cd;"></span> Zonsopgang (bento)
+                            </button>
+                        </div>
+                    </div>
                     <div class="hs-user-menu">
                         <button class="hs-user-btn" id="hsNotifBtn" aria-haspopup="true" aria-expanded="false" aria-label="Notificaties (<?= $unread ?> ongelezen)">
                             <span class="hs-avatar" style="background:<?= e($user['avatar_color'] ?? '#059669') ?>;width:34px;height:34px;position:relative;">
@@ -149,7 +168,7 @@ function renderPublicEnd(): void
     </main>
     <footer style="text-align:center;padding:2.5rem 1.5rem;color:var(--hs-text-muted);font-size:.82rem;">
         Aangedreven door <a href="/" style="color:var(--hs-primary);font-weight:600;text-decoration:none;">HanzeStatus</a>
-        &middot; <span style="opacity:.75;">Dit is een gesimuleerde demo-omgeving: monitorstatussen worden berekend, niet live gemeten.</span>
+        &middot; <span style="opacity:.75;">Dit is een demo-omgeving: curatiemonitors zijn gesimuleerd, monitors met een "live"-badge worden echt gecontroleerd.</span>
     </footer>
     <div class="hs-toast-wrap" id="hsToastWrap"></div>
     <script src="assets/js/app.js"></script>
